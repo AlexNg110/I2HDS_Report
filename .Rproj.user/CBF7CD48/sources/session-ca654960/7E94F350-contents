@@ -1,0 +1,77 @@
+---
+title: 'Assessment 2: Report'
+author: "Nguyen, Pham Linh Uyen - Student ID: 52535583"
+date: "01.12.2025"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Summary
+
+This report presents a line chart illustrating how the percentage of Scottish population prescribed medications for anxiety, depression and psychosis has changed between 2014 and 2023. This visualization aims to provide a clear overview of the mental health landscape of Scotland over a decade, highlighting the demand for pharmacological support of the public. This insight helps the healthcare providers (such as clinicians, public health professionals, etc.), government health organizations, social workers and relevant social organizations to better evaluate the current state of mental health of the population and implement necessary preventative measures for the people. Furthermore, understanding the trend of medication-dependency related to mental health problems may be useful in making policy decisions and forming suitable community support initiatives, which aims to improve patient outcomes.
+
+The dataset used in this report was retrieved from [Scottish Public Health Observatory Profiles](https://scotland.shinyapps.io/ScotPHO_profiles_tool/) under the indicator "Population prescribed drugs for anxiety/depression/psychosis" in Scotland. While the dataset provides a clear overview of national prescribing trends over time, it has some limitations. The data does not include information of locality or demographic subgroups, which limits the ability to identify the problem on the regional or demographic scale. Additionally, the data lacks details on dosage or treatment duration, which limits the full understanding of patients' medication use. Therefore, this dataset is useful for identifying broad trends rather than providing detailed insights.
+
+The line graph in the report effectively illustrates changes over time, making it easier to identify trends and patterns compared to other chart types. It is simple, intuitive and suitable for the audience to quickly understand the overall picture. However, this visualization fails to provide more detailed information on a granular level, limiting its usage for research targeted interventions for the population.
+
+# Report
+
+## Load packages
+
+```{r load-packages}
+library(tidyverse)
+```
+
+## Read in data
+
+```{r read-data}
+data <- read_csv("ScotPHO_datatab_extract_Scotland.csv")
+```
+
+## Prepare data
+
+```{r select-data}
+glimpse(data)
+
+ppd_data <- data %>%
+  filter(
+    area_name == "Scotland", 
+    year %in% c("2014", "2015", "2016", "2017", "2018", "2019", "2020", "2021", "2022", "2023")) %>%
+  select(year,measure,upper_confidence_interval,lower_confidence_interval)
+
+glimpse(ppd_data)
+```
+
+## Line chart
+
+```{r line-chart}
+ppd_data %>%                          
+  ggplot(aes(x = year, y = measure)) +
+  geom_line(colour = "blue") +
+  geom_point() +
+  geom_text(aes(label = round(measure, 1)), 
+            vjust = -1.5, 
+            size = 3) +
+  geom_ribbon(aes(ymin = lower_confidence_interval, ymax = upper_confidence_interval), 
+              fill = "red", 
+              linetype = 3, 
+              alpha = 0.3) +
+  theme_light() +
+  theme(axis.title.x = element_text(margin = margin(t = 10)),
+        axis.title.y = element_text(margin = margin(r = 10)), 
+        plot.title = element_text(face = "bold", hjust = 0.5)) +
+  scale_x_continuous(breaks = 2014:2023) +
+  scale_y_continuous(expand = expansion(mult = c(0.02, 0.1))) +
+  labs(
+    title = str_wrap(
+      "Population prescribed drugs for anxiety, depression and psychosis in Scotland between 2014 and 2023", 
+      width = 65),
+    x = "Year",
+    y = "Percentage"
+  )
+```
